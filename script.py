@@ -1,4 +1,4 @@
-import psutil, datetime, time, pandas as pd
+import psutil, datetime, time, pandas as pd, os
 
 while True:
 
@@ -12,26 +12,33 @@ while True:
     rede_nova = psutil.net_io_counters()
 
     bytes_enviados = ((rede_nova.bytes_sent - rede_antiga.bytes_sent) / 1024 / 1024 )
-    bytes_recebidos = rede_nova.bytes_recv - rede_antiga.bytes_recv
+    bytes_recebidos = ((rede_nova.bytes_recv - rede_antiga.bytes_recv) / 1024 / 1024 )
 
     mac_adress = psutil.net_if_addrs()
     mac_Ethernet = mac_adress["Ethernet"][0][1]
     mac_Wifi = mac_adress["Wi-Fi"][0][1]
     
     timestamp = time.time()
-    data_formatada = datetime.datetime.fromtimestamp(timestamp).strptime("%Y-%m-%d - %H:%M:%S")
+    data_formatada = datetime.datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S")
 
     valores = {
-        "Datetime": data_formatada,
-        "Mac_Ethernet": mac_Ethernet,
-        "Mac_Wifi": mac_Wifi,
-        "cpu": psutil.cpu_percent(interval=1),
-        "ram_usada": psutil.virtual_memory().percent,
-        "ram_livre": ((psutil.virtual_memory().available) / 1024 / 1024 / 1024),
-        "swap": psutil.swap_memory().percent,
-        "discoTot_usado": (psutil.disk_usage('/').percent),
-        "Taxa_Inscricao": taxaI,
-        "Mb_Enviados": bytes_enviados,
-        "Mb_Recebidos": bytes_recebidos,
+        "Datetime": [data_formatada],
+        "Mac_Ethernet": [mac_Ethernet],
+        "Mac_Wifi": [mac_Wifi],
+        "cpu": [psutil.cpu_percent(interval=1)],
+        "ram_usada": [psutil.virtual_memory().percent],
+        "ram_livre": [((psutil.virtual_memory().available) / 1024 / 1024 / 1024)],
+        "swap": [psutil.swap_memory().percent],
+        "discoTot_usado": [(psutil.disk_usage('/').percent)],
+        "Taxa_Inscricao": [taxaI],
+        "Mb_Enviados": [bytes_enviados],
+        "Mb_Recebidos": [bytes_recebidos]
     }
-
+    
+    df = pd.DataFrame(valores)
+    if os.path.exists("DadosHardware.csv"):
+        df.to_csv("DadosHardware.csv", sep= ';', mode= 'a', index=False, header=False)
+    else:
+        df.to_csv("DadosHardware.csv", index=False, sep= ';')
+    
+    time.sleep(5)

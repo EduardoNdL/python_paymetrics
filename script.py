@@ -1,4 +1,4 @@
-import psutil, datetime, time, pandas as pd, os
+import psutil, datetime, time, pandas as pd, os, platform
 
 while True:
 
@@ -14,9 +14,21 @@ while True:
     bytes_enviados = ((rede_nova.bytes_sent - rede_antiga.bytes_sent) / 1024 / 1024 )
     bytes_recebidos = ((rede_nova.bytes_recv - rede_antiga.bytes_recv) / 1024 / 1024 )
 
-    mac_adress = psutil.net_if_addrs()
-    mac_Ethernet = mac_adress["Ethernet"][0][1]
-    mac_Wifi = mac_adress["Wi-Fi"][0][1]
+
+    mac_Ethernet = None
+    mac_Wifi = None
+    for itens, detalhes in psutil.net_if_addrs().items():
+        for especicacoes in detalhes:
+            if platform.system() == 'Windows':
+                if itens == 'Ethernet' and mac_Ethernet == None:
+                    mac_Ethernet = especicacoes.address
+                elif itens == 'Wi-Fi' and mac_Wifi == None:
+                    mac_Wifi = especicacoes.address
+            else:
+                if itens.startswith(("eth", "enp", "ens")) and mac_Ethernet == None:
+                    mac_Ethernet = especicacoes.address
+                elif itens.startswith(("wlan", "wlp")) and mac_Wifi == None:
+                    mac_Wifi = especicacoes.address
     
     timestamp = time.time()
     data_formatada = datetime.datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S")

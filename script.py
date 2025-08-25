@@ -16,19 +16,14 @@ while True:
 
 
     mac_Ethernet = None
-    mac_Wifi = None
     for itens, detalhes in psutil.net_if_addrs().items():
         for especicacoes in detalhes:
             if platform.system() == 'Windows':
                 if itens == 'Ethernet' and mac_Ethernet == None:
                     mac_Ethernet = especicacoes.address
-                elif itens == 'Wi-Fi' and mac_Wifi == None:
-                    mac_Wifi = especicacoes.address
             else:
                 if itens.startswith(("eth", "enp", "ens")) and mac_Ethernet == None:
                     mac_Ethernet = especicacoes.address
-                elif itens.startswith(("wlan", "wlp")) and mac_Wifi == None:
-                    mac_Wifi = especicacoes.address
     
     timestamp = time.time()
     data_formatada = datetime.datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S")
@@ -36,7 +31,6 @@ while True:
     valores = {
         "Datetime": [data_formatada],
         "Mac_Ethernet": [mac_Ethernet],
-        "Mac_Wifi": [mac_Wifi],
         "cpu": [psutil.cpu_percent(interval=1)],
         "ram_usada": [psutil.virtual_memory().percent],
         "ram_livre": [((psutil.virtual_memory().available) / 1024 / 1024 / 1024)],
